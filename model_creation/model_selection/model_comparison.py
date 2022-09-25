@@ -52,11 +52,12 @@ if __name__ == "__main__":
     data_processing_params_set = get_different_data_processing_params_set()
     model_params_set = get_different_model_hyperparameter()
 
-    for data_params in data_processing_params_set:
-        for i in range(len(model_params_set)):
+    for i in range(len(data_processing_params_set)):
+        data_params = data_processing_params_set[i]
+        for j in range(len(model_params_set)):
             X_train, y_train = DataPreprocessingUtil(train_data_folder, data_params).load_preprocessed_dataset()
-            input_shape = get_input_shape(data_params, model_params_set[i])
-            sd_detection_model = SdDetectionModel(model_params_set[i], input_shape)
+            input_shape = get_input_shape(data_params, model_params_set[j])
+            sd_detection_model = SdDetectionModel(model_params_set[j], input_shape)
             sd_detection_model.save_model()
 
             X_train = X_train.astype(np.float32)
@@ -65,6 +66,6 @@ if __name__ == "__main__":
             sd_detection_model.train_model(X_train, y_train)
 
             X_test, y_test = DataPreprocessingUtil(test_data_folder, data_params).load_preprocessed_dataset()
-            loss, accuracy = sd_detection_model.evaluate_model(X_test, y_test)
-            print(loss, accuracy)
-            sd_detection_model.predict_sd(X_test, y_test, (i + 1), "all_test_patient", "test")
+            accuracy = sd_detection_model.evaluate_model(X_test, y_test)
+            print(accuracy)
+            sd_detection_model.predict_sd(X_test, y_test, (j + 1), "all_test_patient", "test", (i+1))

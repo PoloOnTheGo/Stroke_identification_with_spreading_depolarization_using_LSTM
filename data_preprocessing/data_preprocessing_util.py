@@ -43,6 +43,9 @@ def get_patient_file_with_corrected_sd_blocks(patient_file):
         if dc.VALUE_SD in g[dc.COLUMN_MSD].unique():
             if dc.VALUE_DEPR not in g.iloc[:, :-1].values:
                 g = g.replace({dc.VALUE_SD: dc.VALUE_NOT_SD})
+            elif (g.iloc[:, :-1].values == dc.VALUE_DEPR).sum() == 1:
+                print((g.iloc[:, :-1].values == dc.VALUE_DEPR).sum())
+                g = g.replace({dc.VALUE_SD: dc.VALUE_NOT_SD})
             elif len(g) > 61:
                 g = get_corrected_long_sd_blocks(g)
         if i == 1:
