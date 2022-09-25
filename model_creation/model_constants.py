@@ -1,0 +1,11 @@
+SIMPLE_LSTM = "Simple_LSTM"
+CNN_LSTM = "CNN_LSTM"
+CONV_LSTM = "Conv_LSTM"
+
+ACTIVATION_RELU = "relu"
+ACTIVATION_SIGMOID = "sigmoid"
+
+BINARY_CROSSENTROPY_LOSS = "binary_crossentropy"
+ADAM_OPTIMIZER = 'adam'
+
+N_OUTPUT = 1
