@@ -43,8 +43,7 @@ def get_patient_file_with_corrected_sd_blocks(patient_file):
         if dc.VALUE_SD in g[dc.COLUMN_MSD].unique():
             if dc.VALUE_DEPR not in g.iloc[:, :-1].values:
                 g = g.replace({dc.VALUE_SD: dc.VALUE_NOT_SD})
-            elif (g.iloc[:, :-1].values == dc.VALUE_DEPR).sum() == 1:
-                print((g.iloc[:, :-1].values == dc.VALUE_DEPR).sum())
+            elif (g.iloc[:, :-1].values == dc.VALUE_DEPR).sum() == 1:  # if there is only 1 depr over the whole SD block
                 g = g.replace({dc.VALUE_SD: dc.VALUE_NOT_SD})
             elif len(g) > 61:
                 g = get_corrected_long_sd_blocks(g)
@@ -125,7 +124,6 @@ def split_sequences(time_gap_split_patient_data, time_window, time_window_shift)
     X_patient, y_patient, = [], []
     j = 0
     for sequences in time_gap_split_patient_data:
-        #         print("for split number: " + str(j+1) + " =================================")
         for i in range(0, len(sequences), time_window_shift):
             # find the end of this pattern
             end_ix = i + time_window
