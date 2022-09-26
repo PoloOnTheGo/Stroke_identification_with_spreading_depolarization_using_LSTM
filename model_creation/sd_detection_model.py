@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -10,6 +8,7 @@ from keras.metrics import FalseNegatives
 from keras.models import Sequential
 from sklearn import metrics
 
+from file_management.file_management_util import FileManagementUtil
 from model_creation import model_constants as mc
 from model_creation.hyper_parameters.model_hyper_parameters import ModelHyperParameters
 
@@ -59,33 +58,22 @@ def conv_lstm_model(model, mh, input_shape):
     model.compile(loss=mc.BINARY_CROSSENTROPY_LOSS, optimizer=mc.ADAM_OPTIMIZER, metrics=[BinaryAccuracy()])
 
 
-def save_prediction(X_for_prediction, y_for_prediction, predicted_y, model_no, patient_file_name, data_type, dp_set_no):
+def save_prediction(X_for_prediction, y_for_prediction, predicted_y, prediction_file_name):
     df_result = pd.DataFrame(data=[[x[-1]] for x in X_for_prediction])
     df_result['Test_y'] = np.reshape(y_for_prediction, len(y_for_prediction))
     df_result['Predicted_y'] = np.reshape(predicted_y, len(predicted_y))
-
-    output_file_name = str(patient_file_name) + '_prediction.csv'
-    output_dir = Path(
-        '../../data/' + str(data_type) + '_result/model_' + str(model_no) + '_data_param_set_' + str(dp_set_no))
-    output_dir.mkdir(parents=True, exist_ok=True)
-    fullname = output_dir / output_file_name  # os.path.join(output_dir, output_file_name)
-    print(fullname)
-    df_result.to_csv(fullname)
+    df_result.to_csv(prediction_file_name)
 
 
-def save_confusion_matrix(y_for_prediction, predicted_y, model_no, patient_file_name, data_type, dp_set_no):
+def save_confusion_matrix(y_for_prediction, predicted_y, conf_matrix_file_name):
     confusion_matrix = metrics.confusion_matrix(y_for_prediction, predicted_y)
     cm_display = metrics.ConfusionMatrixDisplay(confusion_matrix=confusion_matrix, display_labels=[False, True])
     cm_display.plot()
     plt.rcParams.update({'font.size': 8})
     plt.title(get_metrics_vales(confusion_matrix, y_for_prediction, predicted_y))
-    output_file_name = str(patient_file_name) + '_confusion_matrix.jpg'
-    output_dir = Path(
-        '../../data/' + str(data_type) + '_result/model_' + str(model_no) + '_data_param_set_' + str(dp_set_no))
-    output_dir.mkdir(parents=True, exist_ok=True)
-    fullname = output_dir / output_file_name
-    plt.savefig(fullname)
-    plt.show()
+    plt.savefig(conf_matrix_file_name)
+    plt.close()
+    # plt.show()
 
 
 def get_metrics_vales(confusion_matrix, y_for_prediction, predicted_y):
@@ -135,11 +123,10 @@ class SdDetectionModel(Sequential):
             conv_lstm_model(self, self.hyper_parameters, input_shape)
             print('model created')
 
-    def save_model(self):
-        model_json = self.to_json()
-        with open("../model-bw.json", "w") as json_file:
-            json_file.write(model_json)
-        self.save_weights('../model-bw.h5')
+    def save_model(self, fmu: FileManagementUtil):
+        fmu.save_json_file(file_name='model.json', obj_json=self.to_json())
+        weights_file_path = fmu.path_creator(file_name='model.h5')
+        self.save_weights(weights_file_path)
 
     def train_model(self, train_X, train_y):
         # fit network
@@ -152,11 +139,10 @@ class SdDetectionModel(Sequential):
                                  verbose=self.hyper_parameters.verbose)
         return accuracy
 
-    def predict_sd(self, X_for_prediction, y_for_prediction, model_no, patient_file_name, data_type, dp_set_no):
+    def predict_sd(self, X_for_prediction, y_for_prediction, prediction_file_name, conf_matrix_file_name):
         # evaluate model
         predicted_y = (self.predict(X_for_prediction, batch_size=self.hyper_parameters.batch_size,
                                     verbose=0) > self.hyper_parameters.threshold).astype("int32")
 
-        save_prediction(X_for_prediction, y_for_prediction, predicted_y, model_no, patient_file_name, data_type,
-                        dp_set_no)
-        save_confusion_matrix(y_for_prediction, predicted_y, model_no, patient_file_name, data_type, dp_set_no)
+        save_prediction(X_for_prediction, y_for_prediction, predicted_y, prediction_file_name)
+        save_confusion_matrix(y_for_prediction, predicted_y, conf_matrix_file_name)

@@ -4,6 +4,8 @@ from os.path import isfile, join  # for combining multiple files into one datafr
 import numpy as np
 import warnings
 
+from file_management.file_management_util import FileManagementUtil
+
 warnings.simplefilter(action='ignore', category=FutureWarning)
 import pandas as pd
 
@@ -16,9 +18,9 @@ FOLDER_TRAIN_DATA = 'train_data'
 def read_data_for_each_patient_in_list(folder_name):
     files = []
     # Create a dataframe list by using a list comprehension
-    for file in sorted(listdir(folder_name)):
-        if isfile(join(folder_name, file)):
-            files.append(pd.read_csv(join(folder_name, file), index_col=dc.COLUMN_SIG_START, parse_dates=True))
+    file_names = FileManagementUtil(folder_path=folder_name).get_all_files_in_directory()
+    for file_name in file_names:
+        files.append(pd.read_csv(file_name, index_col=dc.COLUMN_SIG_START, parse_dates=True))
     return files
 
 
