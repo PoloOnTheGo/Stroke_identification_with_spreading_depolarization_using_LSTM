@@ -55,11 +55,12 @@ def conv_lstm_model(model, mh, input_shape):
     model.add(Flatten())
     model.add(Dense(mh.dlh.no_of_neurons, activation=mh.dlh.act_func))
     model.add(Dense(mc.N_OUTPUT, activation=mc.ACTIVATION_SIGMOID))
-    model.compile(loss=mc.BINARY_CROSSENTROPY_LOSS, optimizer=mc.ADAM_OPTIMIZER, metrics=[BinaryAccuracy()])
+    model.compile(loss=mc.BINARY_CROSSENTROPY_LOSS, optimizer=mc.ADAM_OPTIMIZER,
+                  metrics=[BinaryAccuracy(), FalseNegatives()])
 
 
-def save_prediction(X_for_prediction, y_for_prediction, predicted_y, prediction_file_name):
-    df_result = pd.DataFrame(data=[[x[-1]] for x in X_for_prediction])
+def save_prediction(X_pred, y_for_prediction, predicted_y, prediction_file_name):
+    df_result = pd.DataFrame(data=[[x[-1]] for x in X_pred])
     df_result['Test_y'] = np.reshape(y_for_prediction, len(y_for_prediction))
     df_result['Predicted_y'] = np.reshape(predicted_y, len(predicted_y))
     df_result.to_csv(prediction_file_name)
@@ -139,10 +140,10 @@ class SdDetectionModel(Sequential):
                                  verbose=self.hyper_parameters.verbose)
         return accuracy
 
-    def predict_sd(self, X_for_prediction, y_for_prediction, prediction_file_name, conf_matrix_file_name):
+    def predict_sd(self,X_pred, X_updated_for_pred, y_for_prediction, prediction_file_name, conf_matrix_file_name):
         # evaluate model
-        predicted_y = (self.predict(X_for_prediction, batch_size=self.hyper_parameters.batch_size,
+        predicted_y = (self.predict(X_updated_for_pred, batch_size=self.hyper_parameters.batch_size,
                                     verbose=0) > self.hyper_parameters.threshold).astype("int32")
 
-        save_prediction(X_for_prediction, y_for_prediction, predicted_y, prediction_file_name)
+        save_prediction(X_pred, y_for_prediction, predicted_y, prediction_file_name)
         save_confusion_matrix(y_for_prediction, predicted_y, conf_matrix_file_name)

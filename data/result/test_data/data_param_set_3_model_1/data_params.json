@@ -1,0 +1,6 @@
+{
+    "before_sd_buffer": 20,
+    "after_sd_buffer": 20,
+    "time_window": 16,
+    "time_window_shift": 1
+}

@@ -30,166 +30,113 @@ def get_input_shape(dp, mp, trainX, testX):
     return in_shape, trainX, testX
 
 
+def add_simple_lstm_model_param(n_layers, dropout, model_list):
+    llh = LstmLayerHyperparameter(no_of_layers_and_filters=n_layers, dropout=dropout)
+    dlh = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
+    model_hp = ModelHyperParameters(model_type=mc.SIMPLE_LSTM, threshold=0.5, llh=llh, dlh=dlh, verbose=1,
+                                    batch_size=64, epochs=3)
+    model_list.append(model_hp)
+
+
+def add_cnn_lstm_model_param(n_layers, dropout, n_steps, n_length, model_list):
+    clh = ConvLayerHyperparameter(act_func=mc.ACTIVATION_RELU, kernel_size=2, no_of_layers_and_filters=n_layers,
+                                  dropout=dropout, pooling=MaxPooling1D(pool_size=2), n_steps=n_steps,
+                                  n_length=n_length)
+    llh = LstmLayerHyperparameter(no_of_layers_and_filters=[100], dropout=Dropout(0.5))
+    dlh = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
+    model_hp = ModelHyperParameters(model_type=mc.CNN_LSTM, threshold=0.5, clh=clh, llh=llh, dlh=dlh, verbose=1,
+                                    batch_size=64, epochs=3)
+    model_list.append(model_hp)
+
+
+def add_conv_lstm_model_param(n_layers, dropout, n_steps, n_length, model_list):
+    clh = ConvLayerHyperparameter(act_func=mc.ACTIVATION_RELU, kernel_size=(1, 2), no_of_layers_and_filters=n_layers,
+                                  dropout=dropout, pooling=MaxPooling1D(pool_size=2), n_steps=n_steps,
+                                  n_length=n_length)
+    llh = LstmLayerHyperparameter(no_of_layers_and_filters=[100], dropout=Dropout(0.5))
+    dlh = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
+    model_hp = ModelHyperParameters(model_type=mc.CONV_LSTM, threshold=0.5, clh=clh, llh=llh, dlh=dlh,
+                                    verbose=1, batch_size=64, epochs=3)
+    model_list.append(model_hp)
+
+
 def get_different_model_hyperparameter():
     model_list = []
 
     print("Model 1 (Simple LSTM) ===================================")
-    llh_1 = LstmLayerHyperparameter(no_of_layers_and_filters=[100], dropout=Dropout(0.5))
-    dlh_1 = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
-    model_hp_1 = ModelHyperParameters(model_type=mc.SIMPLE_LSTM, threshold=0.5, llh=llh_1, dlh=dlh_1, verbose=1,
-                                      batch_size=64, epochs=3)
-    model_list.append(model_hp_1)
+    add_simple_lstm_model_param(n_layers=[100], dropout=Dropout(0.5), model_list=model_list)
 
     print("Model 2 (Simple LSTM) ===================================")
-    llh_2 = LstmLayerHyperparameter(no_of_layers_and_filters=[128], dropout=Dropout(0.5))
-    dlh_2 = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
-    model_hp_2 = ModelHyperParameters(model_type=mc.SIMPLE_LSTM, threshold=0.5, llh=llh_2, dlh=dlh_2, verbose=1,
-                                      batch_size=64, epochs=3)
-    model_list.append(model_hp_2)
+    add_simple_lstm_model_param(n_layers=[128], dropout=Dropout(0.5), model_list=model_list)
 
     print("Model 3 (Simple LSTM) ===================================")
-    llh_3 = LstmLayerHyperparameter(no_of_layers_and_filters=[256], dropout=Dropout(0.5))
-    dlh_3 = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
-    model_hp_3 = ModelHyperParameters(model_type=mc.SIMPLE_LSTM, threshold=0.5, llh=llh_3, dlh=dlh_3, verbose=1,
-                                      batch_size=64, epochs=3)
-    model_list.append(model_hp_3)
+    add_simple_lstm_model_param(n_layers=[256], dropout=Dropout(0.5), model_list=model_list)
 
     print("Model 4 (Simple LSTM) ===================================")
-    llh_4 = LstmLayerHyperparameter(no_of_layers_and_filters=[256], dropout=Dropout(0.8))
-    dlh_4 = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
-    model_hp_4 = ModelHyperParameters(model_type=mc.SIMPLE_LSTM, threshold=0.5, llh=llh_4, dlh=dlh_4, verbose=1,
-                                      batch_size=64, epochs=3)
-    model_list.append(model_hp_4)
+    add_simple_lstm_model_param(n_layers=[256], dropout=Dropout(0.8), model_list=model_list)
 
     print("Model 5 (Simple LSTM) ===================================")
-    llh_5 = LstmLayerHyperparameter(no_of_layers_and_filters=[64], dropout=Dropout(0.5))
-    dlh_5 = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
-    model_hp_5 = ModelHyperParameters(model_type=mc.SIMPLE_LSTM, threshold=0.5, llh=llh_5, dlh=dlh_5, verbose=1,
-                                      batch_size=64, epochs=3)
-    model_list.append(model_hp_5)
+    add_simple_lstm_model_param(n_layers=[64], dropout=Dropout(0.5), model_list=model_list)
 
     print("Model 6 (Simple LSTM) ===================================")
-    llh_6 = LstmLayerHyperparameter(no_of_layers_and_filters=[64], dropout=Dropout(0.8))
-    dlh_6 = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
-    model_hp_6 = ModelHyperParameters(model_type=mc.SIMPLE_LSTM, threshold=0.5, llh=llh_6, dlh=dlh_6, verbose=1,
-                                      batch_size=64, epochs=3)
-    model_list.append(model_hp_6)
+    add_simple_lstm_model_param(n_layers=[64], dropout=Dropout(0.8), model_list=model_list)
 
     print("Model 7 (Simple LSTM) ===================================")
-    llh_7 = LstmLayerHyperparameter(no_of_layers_and_filters=[64], dropout=Dropout(0.25))
-    dlh_7 = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
-    model_hp_7 = ModelHyperParameters(model_type=mc.SIMPLE_LSTM, threshold=0.5, llh=llh_7, dlh=dlh_7, verbose=1,
-                                      batch_size=64, epochs=3)
-    model_list.append(model_hp_7)
+    add_simple_lstm_model_param(n_layers=[64], dropout=Dropout(0.25), model_list=model_list)
 
     print("Model 8 (CNN LSTM)===================================")
-    clh_8 = ConvLayerHyperparameter(act_func=mc.ACTIVATION_RELU, kernel_size=2, no_of_layers_and_filters=[64, 64],
-                                    dropout=Dropout(0.5), pooling=MaxPooling1D(pool_size=2), n_steps=2, n_length=4)
-    llh_8 = LstmLayerHyperparameter(no_of_layers_and_filters=[100], dropout=Dropout(0.5))
-    dlh_8 = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
-    model_hp_8 = ModelHyperParameters(model_type=mc.CNN_LSTM, threshold=0.5, clh=clh_8, llh=llh_8, dlh=dlh_8,
-                                      verbose=1, batch_size=64, epochs=3)
-    model_list.append(model_hp_8)
+    add_cnn_lstm_model_param(n_layers=[64, 64], dropout=Dropout(0.5), n_steps=2, n_length=4, model_list=model_list)
 
     print("Model 9 (CNN LSTM)===================================")
-    clh_9 = ConvLayerHyperparameter(act_func=mc.ACTIVATION_RELU, kernel_size=2, no_of_layers_and_filters=[64, 64],
-                                    dropout=Dropout(0.5), pooling=MaxPooling1D(pool_size=2), n_steps=2, n_length=8)
-    llh_9 = LstmLayerHyperparameter(no_of_layers_and_filters=[100], dropout=Dropout(0.5))
-    dlh_9 = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
-    model_hp_9 = ModelHyperParameters(model_type=mc.CNN_LSTM, threshold=0.5, clh=clh_9, llh=llh_9, dlh=dlh_9,
-                                      verbose=1, batch_size=64, epochs=3)
-    model_list.append(model_hp_9)
+    add_cnn_lstm_model_param(n_layers=[64, 64], dropout=Dropout(0.5), n_steps=2, n_length=8, model_list=model_list)
 
     print("Model 10 (CNN LSTM)===================================")
-    clh_10 = ConvLayerHyperparameter(act_func=mc.ACTIVATION_RELU, kernel_size=2, no_of_layers_and_filters=[64, 64],
-                                     dropout=Dropout(0.5), pooling=MaxPooling1D(pool_size=2), n_steps=4, n_length=16)
-    llh_10 = LstmLayerHyperparameter(no_of_layers_and_filters=[100], dropout=Dropout(0.5))
-    dlh_10 = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
-    model_hp_10 = ModelHyperParameters(model_type=mc.CNN_LSTM, threshold=0.5, clh=clh_10, llh=llh_10, dlh=dlh_10,
-                                       verbose=1, batch_size=64, epochs=3)
-    model_list.append(model_hp_10)
+    add_cnn_lstm_model_param(n_layers=[64, 64], dropout=Dropout(0.5), n_steps=4, n_length=8, model_list=model_list)
 
     print("Model 11 (CNN LSTM)===================================")
-    clh_11 = ConvLayerHyperparameter(act_func=mc.ACTIVATION_RELU, kernel_size=2, no_of_layers_and_filters=[64, 64],
-                                     dropout=Dropout(0.25), pooling=MaxPooling1D(pool_size=2), n_steps=4, n_length=16)
-    llh_11 = LstmLayerHyperparameter(no_of_layers_and_filters=[100], dropout=Dropout(0.5))
-    dlh_11 = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
-    model_hp_11 = ModelHyperParameters(model_type=mc.CNN_LSTM, threshold=0.5, clh=clh_11, llh=llh_11, dlh=dlh_11,
-                                       verbose=1, batch_size=64, epochs=3)
-    model_list.append(model_hp_11)
+    add_cnn_lstm_model_param(n_layers=[64, 64], dropout=Dropout(0.5), n_steps=2, n_length=16, model_list=model_list)
 
     print("Model 12 (CNN LSTM)===================================")
-    clh_12 = ConvLayerHyperparameter(act_func=mc.ACTIVATION_RELU, kernel_size=2, no_of_layers_and_filters=[64, 64],
-                                     dropout=Dropout(0.8), pooling=MaxPooling1D(pool_size=2), n_steps=4, n_length=16)
-    llh_12 = LstmLayerHyperparameter(no_of_layers_and_filters=[100], dropout=Dropout(0.5))
-    dlh_12 = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
-    model_hp_12 = ModelHyperParameters(model_type=mc.CNN_LSTM, threshold=0.5, clh=clh_12, llh=llh_12, dlh=dlh_12,
-                                       verbose=1, batch_size=64, epochs=3)
-    model_list.append(model_hp_12)
+    add_cnn_lstm_model_param(n_layers=[64, 64], dropout=Dropout(0.5), n_steps=4, n_length=16, model_list=model_list)
 
     print("Model 13 (CNN LSTM)===================================")
-    clh_13 = ConvLayerHyperparameter(act_func=mc.ACTIVATION_RELU, kernel_size=2, no_of_layers_and_filters=[128, 128],
-                                     dropout=Dropout(0.8), pooling=MaxPooling1D(pool_size=2), n_steps=4, n_length=16)
-    llh_13 = LstmLayerHyperparameter(no_of_layers_and_filters=[100], dropout=Dropout(0.5))
-    dlh_13 = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
-    model_hp_13 = ModelHyperParameters(model_type=mc.CNN_LSTM, threshold=0.5, clh=clh_13, llh=llh_13, dlh=dlh_13,
-                                       verbose=1, batch_size=64, epochs=3)
-    model_list.append(model_hp_13)
+    add_cnn_lstm_model_param(n_layers=[64, 64], dropout=Dropout(0.25), n_steps=4, n_length=16, model_list=model_list)
 
-    print("Model 14 (CONV LSTM)===================================")
-    clh_14 = ConvLayerHyperparameter(act_func=mc.ACTIVATION_RELU, kernel_size=(1, 2), no_of_layers_and_filters=[64, 64],
-                                     dropout=Dropout(0.5), pooling=MaxPooling1D(pool_size=2), n_steps=2, n_length=4)
-    llh_14 = LstmLayerHyperparameter(no_of_layers_and_filters=[100], dropout=Dropout(0.5))
-    dlh_14 = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
-    model_hp_14 = ModelHyperParameters(model_type=mc.CONV_LSTM, threshold=0.5, clh=clh_14, llh=llh_14, dlh=dlh_14,
-                                       verbose=1, batch_size=64, epochs=3)
-    model_list.append(model_hp_14)
+    print("Model 14 (CNN LSTM)===================================")
+    add_cnn_lstm_model_param(n_layers=[64, 64], dropout=Dropout(0.8), n_steps=4, n_length=16, model_list=model_list)
 
     print("Model 15 (CNN LSTM)===================================")
-    clh_15 = ConvLayerHyperparameter(act_func=mc.ACTIVATION_RELU, kernel_size=(1, 2), no_of_layers_and_filters=[64, 64],
-                                     dropout=Dropout(0.5), pooling=MaxPooling1D(pool_size=2), n_steps=2, n_length=8)
-    llh_15 = LstmLayerHyperparameter(no_of_layers_and_filters=[100], dropout=Dropout(0.5))
-    dlh_15 = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
-    model_hp_15 = ModelHyperParameters(model_type=mc.CONV_LSTM, threshold=0.5, clh=clh_15, llh=llh_15, dlh=dlh_15,
-                                       verbose=1, batch_size=64, epochs=3)
-    model_list.append(model_hp_15)
+    add_cnn_lstm_model_param(n_layers=[128, 128], dropout=Dropout(0.8), n_steps=2, n_length=16, model_list=model_list)
 
-    print("Model 16 (CNN LSTM)===================================")
-    clh_16 = ConvLayerHyperparameter(act_func=mc.ACTIVATION_RELU, kernel_size=(1, 2), no_of_layers_and_filters=[64, 64],
-                                     dropout=Dropout(0.5), pooling=MaxPooling1D(pool_size=2), n_steps=4, n_length=16)
-    llh_16 = LstmLayerHyperparameter(no_of_layers_and_filters=[100], dropout=Dropout(0.5))
-    dlh_16 = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
-    model_hp_16 = ModelHyperParameters(model_type=mc.CONV_LSTM, threshold=0.5, clh=clh_16, llh=llh_16, dlh=dlh_16,
-                                       verbose=1, batch_size=64, epochs=3)
-    model_list.append(model_hp_16)
+    print("Model 16 (CONV LSTM)===================================")
+    add_conv_lstm_model_param(n_layers=[64, 64], dropout=Dropout(0.5), n_steps=2, n_length=4, model_list=model_list)
 
-    print("Model 17 (CNN LSTM)===================================")
-    clh_17 = ConvLayerHyperparameter(act_func=mc.ACTIVATION_RELU, kernel_size=(1, 2), no_of_layers_and_filters=[64, 64],
-                                     dropout=Dropout(0.25), pooling=MaxPooling1D(pool_size=2), n_steps=4, n_length=16)
-    llh_17 = LstmLayerHyperparameter(no_of_layers_and_filters=[100], dropout=Dropout(0.5))
-    dlh_17 = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
-    model_hp_17 = ModelHyperParameters(model_type=mc.CONV_LSTM, threshold=0.5, clh=clh_17, llh=llh_17, dlh=dlh_17,
-                                       verbose=1, batch_size=64, epochs=3)
-    model_list.append(model_hp_17)
+    print("Model 17 (CONV LSTM)===================================")
+    add_conv_lstm_model_param(n_layers=[64, 64], dropout=Dropout(0.5), n_steps=2, n_length=8, model_list=model_list)
 
-    print("Model 18 (CNN LSTM)===================================")
-    clh_18 = ConvLayerHyperparameter(act_func=mc.ACTIVATION_RELU, kernel_size=(1, 2), no_of_layers_and_filters=[64, 64],
-                                     dropout=Dropout(0.8), pooling=MaxPooling1D(pool_size=2), n_steps=4, n_length=16)
-    llh_18 = LstmLayerHyperparameter(no_of_layers_and_filters=[100], dropout=Dropout(0.5))
-    dlh_18 = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
-    model_hp_18 = ModelHyperParameters(model_type=mc.CONV_LSTM, threshold=0.5, clh=clh_18, llh=llh_18, dlh=dlh_18,
-                                       verbose=1, batch_size=64, epochs=3)
-    model_list.append(model_hp_18)
+    print("Model 18 (CONV LSTM)===================================")
+    add_conv_lstm_model_param(n_layers=[64, 64], dropout=Dropout(0.5), n_steps=4, n_length=8, model_list=model_list)
 
-    print("Model 19 (CNN LSTM)===================================")
-    clh_19 = ConvLayerHyperparameter(act_func=mc.ACTIVATION_RELU, kernel_size=(1, 2),
-                                     no_of_layers_and_filters=[128, 128],
-                                     dropout=Dropout(0.8), pooling=MaxPooling1D(pool_size=2), n_steps=4, n_length=16)
-    llh_19 = LstmLayerHyperparameter(no_of_layers_and_filters=[100], dropout=Dropout(0.5))
-    dlh_19 = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
-    model_hp_19 = ModelHyperParameters(model_type=mc.CONV_LSTM, threshold=0.5, clh=clh_19, llh=llh_19, dlh=dlh_19,
-                                       verbose=1, batch_size=64, epochs=3)
-    model_list.append(model_hp_19)
+    print("Model 19 (CONV LSTM)===================================")
+    add_conv_lstm_model_param(n_layers=[64, 64], dropout=Dropout(0.25), n_steps=4, n_length=8, model_list=model_list)
+
+    print("Model 21 (CONV LSTM)===================================")
+    add_conv_lstm_model_param(n_layers=[128, 128], dropout=Dropout(0.25), n_steps=4, n_length=8, model_list=model_list)
+
+    print("Model 22 (CONV LSTM)===================================")
+    add_conv_lstm_model_param(n_layers=[64, 64], dropout=Dropout(0.5), n_steps=2, n_length=16, model_list=model_list)
+
+    print("Model 23 (CONV LSTM)===================================")
+    add_conv_lstm_model_param(n_layers=[64, 64], dropout=Dropout(0.5), n_steps=4, n_length=16, model_list=model_list)
+
+    print("Model 24 (CONV LSTM)===================================")
+    add_conv_lstm_model_param(n_layers=[64, 64], dropout=Dropout(0.25), n_steps=4, n_length=16, model_list=model_list)
+
+    print("Model 25 (CONV LSTM)===================================")
+    add_conv_lstm_model_param(n_layers=[64, 64], dropout=Dropout(0.8), n_steps=4, n_length=16, model_list=model_list)
+
+    print("Model 26 (CONV LSTM)===================================")
+    add_conv_lstm_model_param(n_layers=[128, 128], dropout=Dropout(0.8), n_steps=4, n_length=16, model_list=model_list)
 
     return model_list
 
@@ -218,8 +165,12 @@ def get_different_data_processing_params_set():
     params_set.append(params_5)
 
     print("Data_processing_parameters 6===================================")
-    params_6 = DataProcessingParams(before_sd_buffer=65, after_sd_buffer=65, time_window=32, time_window_shift=3)
+    params_6 = DataProcessingParams(before_sd_buffer=65, after_sd_buffer=65, time_window=64, time_window_shift=1)
     params_set.append(params_6)
+
+    print("Data_processing_parameters 7===================================")
+    params_7 = DataProcessingParams(before_sd_buffer=65, after_sd_buffer=65, time_window=64, time_window_shift=3)
+    params_set.append(params_7)
 
     return params_set
 
@@ -236,15 +187,12 @@ def main():
         X_train = X_train.astype(np.float32)
         y_train = y_train.astype(np.float32)
         for j in range(len(model_params_set)):
-            mp = model_params_set[j]
-
-            if mp.clh:
-                print(i, j, mp.clh.n_steps, mp.clh.n_length, dp.time_window)
-                if (mp.clh.n_steps * mp.clh.n_length) != dp.time_window:
-                    print('skip')
-                    continue
+            mp: ModelHyperParameters = model_params_set[j]
+            if mp.clh and (mp.clh.n_steps * mp.clh.n_length) != dp.time_window:
+                continue
+            print('============================= data_param_set: ' + str(i + 1) + ', model_param_set: '
+                  + str(j + 1) + ' ===========================')
             input_shape, X_train_updated, X_test_updated = get_input_shape(dp, mp, X_train, X_test)
-            print(input_shape)
             sd_detection_model = SdDetectionModel(mp, input_shape)
 
             fmu = FileManagementUtil()
@@ -257,17 +205,13 @@ def main():
             accuracy = sd_detection_model.evaluate_model(X_test_updated, y_test)
             print(accuracy)
 
-            # output_file_name = str(patient_file_name) + '_confusion_matrix.jpg' output_dir = Path( '../../data/' +
-            # str(data_type) + '_result/model_' + str(model_no) + '_data_param_set_' + str(dp_set_no))
-            # output_dir.mkdir(parents=True, exist_ok=True) conf_matrix_file_name = output_dir / output_file_name
-            # sd_detection_model.predict_sd(X_test, y_test, (j + 1), "all_test_patient", "test", (i + 1))
-
             prediction_file_name = fmu.get_result_full_file_name(patient_file_name='all_test_patient',
                                                                  file_type=fc.PREDICTION_CSV)
             conf_matrix_file_name = fmu.get_result_full_file_name(patient_file_name='all_test_patient',
                                                                   file_type=fc.CONF_MATRIX_JPG)
 
-            sd_detection_model.predict_sd(X_test_updated, y_test, prediction_file_name, conf_matrix_file_name)
+            sd_detection_model.predict_sd(X_test, X_test_updated, y_test, prediction_file_name, conf_matrix_file_name)
+            print('=====================================end of one model ===========================================')
 
 
 if __name__ == "__main__":
