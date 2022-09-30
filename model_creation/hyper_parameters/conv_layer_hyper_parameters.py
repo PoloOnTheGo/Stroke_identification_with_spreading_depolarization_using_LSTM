@@ -2,11 +2,11 @@ import json
 
 
 class ConvLayerHyperparameter:
-    def __init__(self, act_func=None, kernel_size=None, no_of_layers_and_filters=None, dropout=None,
+    def __init__(self, act_func=None, kernel_size=None, no_of_layers_and_neurons=None, dropout=None,
                  pooling=None, n_steps=None, n_length=None):
         self.act_func = act_func
         self.kernel_size = kernel_size
-        self.no_of_layers_and_filters = no_of_layers_and_filters
+        self.no_of_layers_and_neurons = no_of_layers_and_neurons
         self.dropout = dropout
         self.pooling = pooling
         self.n_steps = n_steps

@@ -13,6 +13,13 @@ class FileManagementUtil:
         with open(full_file_path, "w") as json_file:
             json_file.write(obj_json)
 
+    def load_json_file(self, file_name):
+        full_file_path = self.path_creator(file_name)
+        json_file = open(full_file_path, "r")
+        file_json = json_file.read()
+        json_file.close()
+        return file_json
+
     def path_creator(self, file_name):
         output_dir = Path(self.folder_path)
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -34,6 +41,7 @@ class FileManagementUtil:
         print(fullname)
         return fullname
 
-    def set_result_full_path(self, data_type=None, dp_set_no=None, model_no=None):
-        self.folder_path = fmc.RESULT_PATH.format(data_type=data_type, data_param_set=dp_set_no, model_set=model_no)
+    def set_result_full_path(self, root=None, data_type=None, dp_set_no=None, model_no=None):
+        self.folder_path = fmc.RESULT_PATH.format(root=root, data_type=data_type, data_param_set=dp_set_no,
+                                                  model_set=model_no)
 

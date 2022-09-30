@@ -31,7 +31,7 @@ def get_input_shape(dp, mp, trainX, testX):
 
 
 def add_simple_lstm_model_param(n_layers, dropout, model_list):
-    llh = LstmLayerHyperparameter(no_of_layers_and_filters=n_layers, dropout=dropout)
+    llh = LstmLayerHyperparameter(no_of_layers_and_neurons=n_layers, dropout=dropout)
     dlh = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
     model_hp = ModelHyperParameters(model_type=mc.SIMPLE_LSTM, threshold=0.5, llh=llh, dlh=dlh, verbose=1,
                                     batch_size=64, epochs=3)
@@ -39,10 +39,10 @@ def add_simple_lstm_model_param(n_layers, dropout, model_list):
 
 
 def add_cnn_lstm_model_param(n_layers, dropout, n_steps, n_length, model_list):
-    clh = ConvLayerHyperparameter(act_func=mc.ACTIVATION_RELU, kernel_size=2, no_of_layers_and_filters=n_layers,
+    clh = ConvLayerHyperparameter(act_func=mc.ACTIVATION_RELU, kernel_size=2, no_of_layers_and_neurons=n_layers,
                                   dropout=dropout, pooling=MaxPooling1D(pool_size=2), n_steps=n_steps,
                                   n_length=n_length)
-    llh = LstmLayerHyperparameter(no_of_layers_and_filters=[100], dropout=Dropout(0.5))
+    llh = LstmLayerHyperparameter(no_of_layers_and_neurons=[100], dropout=Dropout(0.5))
     dlh = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
     model_hp = ModelHyperParameters(model_type=mc.CNN_LSTM, threshold=0.5, clh=clh, llh=llh, dlh=dlh, verbose=1,
                                     batch_size=64, epochs=3)
@@ -50,10 +50,10 @@ def add_cnn_lstm_model_param(n_layers, dropout, n_steps, n_length, model_list):
 
 
 def add_conv_lstm_model_param(n_layers, dropout, n_steps, n_length, model_list):
-    clh = ConvLayerHyperparameter(act_func=mc.ACTIVATION_RELU, kernel_size=(1, 2), no_of_layers_and_filters=n_layers,
+    clh = ConvLayerHyperparameter(act_func=mc.ACTIVATION_RELU, kernel_size=(1, 2), no_of_layers_and_neurons=n_layers,
                                   dropout=dropout, pooling=MaxPooling1D(pool_size=2), n_steps=n_steps,
                                   n_length=n_length)
-    llh = LstmLayerHyperparameter(no_of_layers_and_filters=[100], dropout=Dropout(0.5))
+    llh = LstmLayerHyperparameter(no_of_layers_and_neurons=[100], dropout=Dropout(0.5))
     dlh = DenseLayerHyperparameter(no_of_neurons=100, act_func=mc.ACTIVATION_RELU)
     model_hp = ModelHyperParameters(model_type=mc.CONV_LSTM, threshold=0.5, clh=clh, llh=llh, dlh=dlh,
                                     verbose=1, batch_size=64, epochs=3)
@@ -176,8 +176,8 @@ def get_different_data_processing_params_set():
 
 
 def main():
-    train_data_folder = fc.DATA_ROOT_PATH + fc.TRAIN_DATA_PATH
-    test_data_folder = fc.DATA_ROOT_PATH + fc.TEST_DATA_PATH
+    train_data_folder = fc.DATA_ROOT_PATH_FOR_MODEL_COMPARISON + fc.TRAIN_DATA_PATH
+    test_data_folder = fc.DATA_ROOT_PATH_FOR_MODEL_COMPARISON + fc.TEST_DATA_PATH
     data_processing_params_set = get_different_data_processing_params_set()
     model_params_set = get_different_model_hyperparameter()
     for i in range(len(data_processing_params_set)):
@@ -195,12 +195,13 @@ def main():
             input_shape, X_train_updated, X_test_updated = get_input_shape(dp, mp, X_train, X_test)
             sd_detection_model = SdDetectionModel(mp, input_shape)
 
+            sd_detection_model.train_model(X_train_updated, y_train)
+
             fmu = FileManagementUtil()
-            fmu.set_result_full_path(data_type=fc.TEST_DATA_PATH, dp_set_no=(i + 1), model_no=(j + 1))
+            fmu.set_result_full_path(root=fc.DATA_ROOT_PATH_FOR_MODEL_COMPARISON, data_type=fc.TEST_DATA_PATH,
+                                     dp_set_no=(i + 1), model_no=(j + 1))
             sd_detection_model.save_model(fmu)
             dp.save_data_params(fmu)
-
-            sd_detection_model.train_model(X_train_updated, y_train)
 
             accuracy = sd_detection_model.evaluate_model(X_test_updated, y_test)
             print(accuracy)

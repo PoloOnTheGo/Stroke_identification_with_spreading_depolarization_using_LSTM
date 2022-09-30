@@ -8,13 +8,13 @@ from keras.metrics import FalseNegatives
 from keras.models import Sequential
 from sklearn import metrics
 
+from data_preprocessing import data_constants as dc
 from file_management.file_management_util import FileManagementUtil
 from model_creation import model_constants as mc
-from data_preprocessing import data_constants as dc
-from model_creation.hyper_parameters.model_hyper_parameters import ModelHyperParameters
 
 
-def simple_lstm_model(model, mh, input_shape):
+def simple_lstm_model(mh, input_shape):
+    model = Sequential()
     no_of_layers_and_filters = mh.llh.no_of_layers_and_filters
     for i in range(len(no_of_layers_and_filters) - 1):
         model.add(LSTM(no_of_layers_and_filters[i], return_sequences=True, input_shape=input_shape))
@@ -25,9 +25,11 @@ def simple_lstm_model(model, mh, input_shape):
     model.add(Dense(mc.N_OUTPUT, activation=mc.ACTIVATION_SIGMOID))
     model.compile(loss=mc.BINARY_CROSSENTROPY_LOSS, optimizer=mc.ADAM_OPTIMIZER,
                   metrics=[BinaryAccuracy(), FalseNegatives()])
+    return model
 
 
-def cnn_lstm_model(model, mh, input_shape):
+def cnn_lstm_model(mh, input_shape):
+    model = Sequential()
     cnn_n = mh.clh.no_of_layers_and_neurons
     for i in range(len(cnn_n) - 1):
         model.add(TimeDistributed(Conv1D(filters=cnn_n[i], kernel_size=mh.clh.kernel_size,
@@ -42,9 +44,11 @@ def cnn_lstm_model(model, mh, input_shape):
     model.add(Dense(mc.N_OUTPUT, activation=mc.ACTIVATION_SIGMOID))
     model.compile(loss=mc.BINARY_CROSSENTROPY_LOSS, optimizer=mc.ADAM_OPTIMIZER,
                   metrics=[BinaryAccuracy(), FalseNegatives()])
+    return model
 
 
-def conv_lstm_model(model, mh, input_shape):
+def conv_lstm_model(mh, input_shape):
+    model = Sequential()
     mh.clh = mh.clh
     conv_n = mh.clh.no_of_layers_and_filters
     for i in range(len(conv_n) - 1):
@@ -58,6 +62,7 @@ def conv_lstm_model(model, mh, input_shape):
     model.add(Dense(mc.N_OUTPUT, activation=mc.ACTIVATION_SIGMOID))
     model.compile(loss=mc.BINARY_CROSSENTROPY_LOSS, optimizer=mc.ADAM_OPTIMIZER,
                   metrics=[BinaryAccuracy(), FalseNegatives()])
+    return model
 
 
 def save_prediction(X_pred, y_for_prediction, predicted_y, prediction_file_name):
@@ -107,54 +112,50 @@ def get_metrics_vales(confusion_matrix, y_for_prediction, predicted_y):
     return str(result)
 
 
-class SdDetectionModel(Sequential):
-    def __init__(self, model_hyper_parameters, input_shape):
-        super().__init__()
-        self.hyper_parameters = model_hyper_parameters
-        model_type = self.hyper_parameters.model_type
-        # Initialising the CNN
-        if model_type == mc.SIMPLE_LSTM:
-            simple_lstm_model(self, self.hyper_parameters, input_shape)
-            print('model created')
+def reshape_X_for_model(mp, X):
+    if mp.model_type == mc.SIMPLE_LSTM:
+        print("No reshape required")
+    elif mp.model_type == mc.CNN_LSTM:
+        X = X.reshape((X.shape[0], mp.clh.n_steps, mp.clh.n_length, dc.NO_OF_COLUMNS))
+    elif mp.model_type == mc.CONV_LSTM:
+        X = X.reshape((X.shape[0], mp.clh.n_steps, 1, mp.clh.n_length, dc.NO_OF_COLUMNS))
+    return X
 
-        elif model_type == mc.CNN_LSTM:
-            cnn_lstm_model(self, self.hyper_parameters, input_shape)
-            print('model created')
 
-        elif model_type == mc.CONV_LSTM:
-            conv_lstm_model(self, self.hyper_parameters, input_shape)
-            print('model created')
+def save_model(model, fmu: FileManagementUtil):
+    fmu.save_json_file(file_name='model.json', obj_json=model.to_json())
+    weights_file_path = fmu.path_creator(file_name='model.h5')
+    model.save_weights(weights_file_path)
 
-    def reshape_X_for_model(self, X):
-        mp = self.hyper_parameters
-        if mp.model_type == mc.SIMPLE_LSTM:
-            print("No reshape required")
-        elif mp.model_type == mc.CNN_LSTM:
-            X = X.reshape((X.shape[0], mp.clh.n_steps, mp.clh.n_length, dc.NO_OF_COLUMNS))
-        elif mp.model_type == mc.CONV_LSTM:
-            X = X.reshape((X.shape[0], mp.clh.n_steps, 1, mp.clh.n_length, dc.NO_OF_COLUMNS))
-        return X
 
-    def save_model(self, fmu: FileManagementUtil):
-        fmu.save_json_file(file_name='model.json', obj_json=self.to_json())
-        weights_file_path = fmu.path_creator(file_name='model.h5')
-        self.save_weights(weights_file_path)
+def train_model(model, mp, train_X, train_y):
+    # fit network
+    model.fit(train_X, train_y, epochs=mp.epochs, batch_size=mp.batch_size, verbose=mp.verbose)
+    print('model fitted')
 
-    def train_model(self, train_X, train_y):
-        # fit network
-        self.fit(train_X, train_y, epochs=self.hyper_parameters.epochs, batch_size=self.hyper_parameters.batch_size,
-                 verbose=self.hyper_parameters.verbose)
-        print('model fitted')
 
-    def evaluate_model(self, test_X, test_y):
-        accuracy = self.evaluate(test_X, test_y, batch_size=self.hyper_parameters.batch_size,
-                                 verbose=self.hyper_parameters.verbose)
-        return accuracy
+def predict_sd(model, mp, X_pred, X_updated_for_pred, y_for_prediction, prediction_file_name, conf_matrix_file_name):
+    # evaluate model
+    predicted_y = (model.predict(X_updated_for_pred, batch_size=mp.batch_size, verbose=0) > mp.threshold).astype(
+        "int32")
 
-    def predict_sd(self,X_pred, X_updated_for_pred, y_for_prediction, prediction_file_name, conf_matrix_file_name):
-        # evaluate model
-        predicted_y = (self.predict(X_updated_for_pred, batch_size=self.hyper_parameters.batch_size,
-                                    verbose=0) > self.hyper_parameters.threshold).astype("int32")
+    save_prediction(X_pred, y_for_prediction, predicted_y, prediction_file_name)
+    save_confusion_matrix(y_for_prediction, predicted_y, conf_matrix_file_name)
 
-        save_prediction(X_pred, y_for_prediction, predicted_y, prediction_file_name)
-        save_confusion_matrix(y_for_prediction, predicted_y, conf_matrix_file_name)
+
+def create_model(model_hyper_parameters, input_shape):
+    model_type = model_hyper_parameters.model_type
+    model = None
+    # Initialising the CNN
+    if model_type == mc.SIMPLE_LSTM:
+        model = simple_lstm_model(model_hyper_parameters, input_shape)
+        print('model created')
+
+    elif model_type == mc.CNN_LSTM:
+        model = cnn_lstm_model(model_hyper_parameters, input_shape)
+        print('model created')
+
+    elif model_type == mc.CONV_LSTM:
+        model = conv_lstm_model(model_hyper_parameters, input_shape)
+        print('model created')
+    return model

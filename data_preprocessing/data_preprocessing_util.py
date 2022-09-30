@@ -1,27 +1,15 @@
-from os import listdir
-from os.path import isfile, join  # for combining multiple files into one dataframe
-
-import numpy as np
 import warnings
 
+import numpy as np
+
+from data_preprocessing import data_constants as dc
+from model_creation import model_constants as mc
+from data_preprocessing.data_processing_params import DataProcessingParams
+from file_management import file_management_constant as fc
 from file_management.file_management_util import FileManagementUtil
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 import pandas as pd
-
-from data_preprocessing import data_constants as dc
-from data_preprocessing.data_processing_params import DataProcessingParams
-
-FOLDER_TRAIN_DATA = 'train_data'
-
-
-def read_data_for_each_patient_in_list(folder_name):
-    files = []
-    # Create a dataframe list by using a list comprehension
-    file_names = FileManagementUtil(folder_path=folder_name).get_all_files_in_directory()
-    for file_name in file_names:
-        files.append(pd.read_csv(file_name, index_col=dc.COLUMN_SIG_START, parse_dates=True))
-    return files
 
 
 def get_corrected_long_sd_blocks(stale_sectioned_sd_block):
@@ -148,24 +136,33 @@ class DataPreprocessingUtil:
         self.time_window = data_processing_params.time_window
         self.time_window_shift = data_processing_params.time_window_shift
 
+    def read_data_for_each_patient_in_list(self):
+        files = []
+        # Create a dataframe list by using a list comprehension
+        file_names = FileManagementUtil(folder_path=self.folder_name).get_all_files_in_directory()
+        for file_name in file_names:
+            files.append(pd.read_csv(file_name, index_col=dc.COLUMN_SIG_START, parse_dates=True))
+        return files
+
+    def load_individual_patient_data(self, patient_file):
+        patient_file_updated = get_patient_file_with_corrected_sd_blocks(patient_file)
+        patient_file_updated = label_encoding(patient_file_updated)
+        if fc.TRAIN_DATA_PATH in self.folder_name:
+            patient_file_updated = get_patient_data_only_around_sds(patient_file_updated, self.before_sd_buffer,
+                                                                    self.after_sd_buffer)
+        time_gap_split_patient_data = split_patient_data_by_time_gap(patient_file_updated)
+        X_patient, y_patient = split_sequences(time_gap_split_patient_data, self.time_window,
+                                               self.time_window_shift)
+        return X_patient, y_patient
+
     def load_preprocessed_dataset(self):
-        patient_files = read_data_for_each_patient_in_list(self.folder_name)
+        patient_files = self.read_data_for_each_patient_in_list()
         X, y = [], []
 
         print('------------------------------------------')
         print(self.folder_name)
         for patient_file in patient_files:
-            patient_file_updated = get_patient_file_with_corrected_sd_blocks(patient_file)
-            patient_file_updated = label_encoding(patient_file_updated)
-
-            if FOLDER_TRAIN_DATA in self.folder_name:
-                patient_file_updated = get_patient_data_only_around_sds(patient_file_updated, self.before_sd_buffer,
-                                                                        self.after_sd_buffer)
-
-            time_gap_split_patient_data = split_patient_data_by_time_gap(patient_file_updated)
-
-            X_patient, y_patient = split_sequences(time_gap_split_patient_data, self.time_window,
-                                                   self.time_window_shift)
+            X_patient, y_patient = self.load_individual_patient_data(patient_file)
 
             X.extend(X_patient)
             y.extend(y_patient)
@@ -173,3 +170,13 @@ class DataPreprocessingUtil:
         y = y.reshape(len(y), 1)
         print(X.shape, y.shape)
         return X, y
+
+    def get_input_shape(self, mp):
+        in_shape = ()
+        if mp.model_type == mc.SIMPLE_LSTM:
+            in_shape = (self.time_window, dc.NO_OF_COLUMNS)
+        elif mp.model_type == mc.CNN_LSTM:
+            in_shape = (None, mp.clh.n_length, dc.NO_OF_COLUMNS)
+        elif mp.model_type == mc.CONV_LSTM:
+            in_shape = (mp.clh.n_steps, 1, mp.clh.n_length, dc.NO_OF_COLUMNS)
+        return in_shape
