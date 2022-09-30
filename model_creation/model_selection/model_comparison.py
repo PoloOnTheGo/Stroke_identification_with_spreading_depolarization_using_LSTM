@@ -13,7 +13,7 @@ from model_creation.hyper_parameters.dense_layer_hyper_parameters import DenseLa
 from model_creation.hyper_parameters.lstm_layer_hyper_parameters import LstmLayerHyperparameter
 from model_creation.hyper_parameters.model_hyper_parameters import ModelHyperParameters
 from model_creation.sd_detection_model import SdDetectionModel
-
+import random
 
 def get_input_shape(dp, mp, trainX, testX):
     in_shape = ()
@@ -120,22 +120,22 @@ def get_different_model_hyperparameter():
     print("Model 19 (CONV LSTM)===================================")
     add_conv_lstm_model_param(n_layers=[64, 64], dropout=Dropout(0.25), n_steps=4, n_length=8, model_list=model_list)
 
-    print("Model 21 (CONV LSTM)===================================")
+    print("Model 20 (CONV LSTM)===================================")
     add_conv_lstm_model_param(n_layers=[128, 128], dropout=Dropout(0.25), n_steps=4, n_length=8, model_list=model_list)
 
-    print("Model 22 (CONV LSTM)===================================")
+    print("Model 21 (CONV LSTM)===================================")
     add_conv_lstm_model_param(n_layers=[64, 64], dropout=Dropout(0.5), n_steps=2, n_length=16, model_list=model_list)
 
-    print("Model 23 (CONV LSTM)===================================")
+    print("Model 22 (CONV LSTM)===================================")
     add_conv_lstm_model_param(n_layers=[64, 64], dropout=Dropout(0.5), n_steps=4, n_length=16, model_list=model_list)
 
-    print("Model 24 (CONV LSTM)===================================")
+    print("Model 23 (CONV LSTM)===================================")
     add_conv_lstm_model_param(n_layers=[64, 64], dropout=Dropout(0.25), n_steps=4, n_length=16, model_list=model_list)
 
-    print("Model 25 (CONV LSTM)===================================")
+    print("Model 24 (CONV LSTM)===================================")
     add_conv_lstm_model_param(n_layers=[64, 64], dropout=Dropout(0.8), n_steps=4, n_length=16, model_list=model_list)
 
-    print("Model 26 (CONV LSTM)===================================")
+    print("Model 25 (CONV LSTM)===================================")
     add_conv_lstm_model_param(n_layers=[128, 128], dropout=Dropout(0.8), n_steps=4, n_length=16, model_list=model_list)
 
     return model_list
@@ -216,4 +216,5 @@ def main():
 
 
 if __name__ == "__main__":
+    random.seed(10)
     main()

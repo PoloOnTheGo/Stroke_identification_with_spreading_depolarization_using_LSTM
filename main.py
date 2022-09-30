@@ -1,4 +1,5 @@
 import warnings
+import random
 
 from keras.layers import MaxPooling1D, Dropout
 from keras.models import model_from_json
@@ -96,4 +97,5 @@ def run_experiment():
 
 
 if __name__ == "__main__":
+    random.seed(10)
     run_experiment()
