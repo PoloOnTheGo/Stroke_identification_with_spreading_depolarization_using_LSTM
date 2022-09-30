@@ -139,9 +139,9 @@ class DataPreprocessingUtil:
     def read_data_for_each_patient_in_list(self):
         files = []
         # Create a dataframe list by using a list comprehension
-        file_names = FileManagementUtil(folder_path=self.folder_name).get_all_files_in_directory()
-        for file_name in file_names:
-            files.append(pd.read_csv(file_name, index_col=dc.COLUMN_SIG_START, parse_dates=True))
+        _, file_full_paths = FileManagementUtil(folder_path=self.folder_name).get_all_files_in_directory()
+        for file_full_path in file_full_paths:
+            files.append(pd.read_csv(file_full_path, index_col=dc.COLUMN_SIG_START, parse_dates=True))
         return files
 
     def load_individual_patient_data(self, patient_file):

@@ -27,13 +27,15 @@ class FileManagementUtil:
         return full_file_path
 
     def get_all_files_in_directory(self):
-        files = []
+        file_name_list = []
+        full_file_path_list = []
         # Create a dataframe list by using a list comprehension
         for file in sorted(listdir(self.folder_path)):
             full_file_path = join(self.folder_path, file)
             if isfile(full_file_path):
-                files.append(full_file_path)
-        return files
+                file_name_list.append(file)
+                full_file_path_list.append(full_file_path)
+        return file_name_list, full_file_path_list
 
     def get_result_full_file_name(self, patient_file_name=None, file_type=None):
         file_name = file_type.format(patient_file_name=patient_file_name)

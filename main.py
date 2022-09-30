@@ -42,16 +42,19 @@ def load_data_params(fmu: FileManagementUtil):
 
 
 def predict_validation_patient_files(model, data_params: DataProcessingParams, model_params):
-    validation_data_folder = fc.DATA_ROOT_PATH_FOR_MODEL_COMPARISON + fc.VALIDATION_DATA_PATH
-    validation_patient_file_names = FileManagementUtil(folder_path=validation_data_folder).get_all_files_in_directory()
-
+    validation_data_folder = fc.DATA_ROOT_PATH_MAIN + fc.VALIDATION_DATA_PATH
+    validation_patient_file_names, validation_patient_file_paths = FileManagementUtil(validation_data_folder).get_all_files_in_directory()
     dpu = DataPreprocessingUtil(validation_data_folder, data_params)
     # validation_patient_file_names = dpu.read_data_for_each_patient_in_list()
 
     fmu = FileManagementUtil()
-    fmu.set_result_full_path(root=fc.DATA_ROOT_PATH_MAIN, data_type=fc.TEST_DATA_PATH, dp_set_no='4', model_no='11')
-    for patient_file_name in validation_patient_file_names:
-        patient_file = pd.read_csv(patient_file_name, index_col=dc.COLUMN_SIG_START, parse_dates=True)
+    fmu.set_result_full_path(root=fc.DATA_ROOT_PATH_MAIN, data_type=fc.VALIDATION_DATA_PATH, dp_set_no='4',
+                             model_no='11')
+    for i in range(len(validation_patient_file_paths)):
+        file_name = validation_patient_file_names[i]
+        file_name_w_o_ext = ''.join(file_name.split())[:-4]
+        print(str(file_name_w_o_ext))
+        patient_file = pd.read_csv(validation_patient_file_paths[i], index_col=dc.COLUMN_SIG_START, parse_dates=True)
         X_val, y_val = dpu.load_individual_patient_data(patient_file)
 
         X_val, y_val = np.array(X_val), np.array(y_val)
@@ -63,9 +66,9 @@ def predict_validation_patient_files(model, data_params: DataProcessingParams, m
 
         X_val_updated = model_util.reshape_X_for_model(model_params, X_val)
 
-        prediction_file_name = fmu.get_result_full_file_name(patient_file_name=patient_file_name,
+        prediction_file_name = fmu.get_result_full_file_name(patient_file_name=file_name_w_o_ext,
                                                              file_type=fc.PREDICTION_CSV)
-        conf_matrix_file_name = fmu.get_result_full_file_name(patient_file_name=patient_file_name,
+        conf_matrix_file_name = fmu.get_result_full_file_name(patient_file_name=file_name_w_o_ext,
                                                               file_type=fc.CONF_MATRIX_JPG)
 
         model_util.predict_sd(model=model, mp=model_params, X_pred=X_val, X_updated_for_pred=X_val_updated,
