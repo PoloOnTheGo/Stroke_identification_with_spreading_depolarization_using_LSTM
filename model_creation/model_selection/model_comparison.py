@@ -12,8 +12,10 @@ from model_creation.hyper_parameters.conv_layer_hyper_parameters import ConvLaye
 from model_creation.hyper_parameters.dense_layer_hyper_parameters import DenseLayerHyperparameter
 from model_creation.hyper_parameters.lstm_layer_hyper_parameters import LstmLayerHyperparameter
 from model_creation.hyper_parameters.model_hyper_parameters import ModelHyperParameters
+from model_creation.model_metrics_util import overall_model_analysis
 from model_creation.sd_detection_model import SdDetectionModel
 import random
+
 
 def get_input_shape(dp, mp, trainX, testX):
     in_shape = ()
@@ -210,9 +212,14 @@ def main():
                                                                  file_type=fc.PREDICTION_CSV)
             conf_matrix_file_name = fmu.get_result_full_file_name(patient_file_name='all_test_patient',
                                                                   file_type=fc.CONF_MATRIX_JPG)
+            metrics_file_name = fmu.get_result_full_file_name(patient_file_name='all_test_patient',
+                                                              file_type=fc.METRICS_CSV)
 
             sd_detection_model.predict_sd(X_test, X_test_updated, y_test, prediction_file_name, conf_matrix_file_name)
             print('=====================================end of one model ===========================================')
+            folder = r'/Users/poulamighosh/Documents/GitHub' \
+                     r'/Stroke_identification_with_spreading_depolarization_using_LSTM/data/result/test_data '
+            overall_model_analysis(folder, metrics_file_name)
 
 
 if __name__ == "__main__":

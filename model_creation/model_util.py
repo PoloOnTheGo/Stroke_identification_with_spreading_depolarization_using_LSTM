@@ -50,7 +50,7 @@ def cnn_lstm_model(mh, input_shape):
 def conv_lstm_model(mh, input_shape):
     model = Sequential()
     mh.clh = mh.clh
-    conv_n = mh.clh.no_of_layers_and_filters
+    conv_n = mh.clh.no_of_layers_and_neurons
     for i in range(len(conv_n) - 1):
         model.add(ConvLSTM2D(filters=conv_n[i], kernel_size=mh.clh.kernel_size, activation=mc.ACTIVATION_RELU,
                              return_sequences=True, input_shape=input_shape))
